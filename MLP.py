@@ -21,7 +21,7 @@ class MLP:
     def sigmoid_derivative(self, x):
         return x * (1 - x)
 
-    def train(self, inputs, targets):
+    def train(self, inputs, targets, isTest=False):
         inputs = np.array(inputs, ndmin=2).T
         targets = np.array(targets, ndmin=2).T
 
@@ -39,11 +39,12 @@ class MLP:
         hidden_errors = np.dot(self.weights_hidden_output.T, output_errors)
 
         # Обновление весов и смещений (обратное распространение)
-        self.weights_hidden_output += self.learning_rate * np.dot((output_errors * self.sigmoid_derivative(final_outputs)), hidden_outputs.T)
-        self.bias_output += self.learning_rate * (output_errors * self.sigmoid_derivative(final_outputs))
+        if (not(isTest)):
+            self.weights_hidden_output += self.learning_rate * np.dot((output_errors * self.sigmoid_derivative(final_outputs)), hidden_outputs.T)
+            self.bias_output += self.learning_rate * (output_errors * self.sigmoid_derivative(final_outputs))
 
-        self.weights_input_hidden += self.learning_rate * np.dot((hidden_errors * self.sigmoid_derivative(hidden_outputs)), inputs.T)
-        self.bias_hidden += self.learning_rate * (hidden_errors * self.sigmoid_derivative(hidden_outputs))
+            self.weights_input_hidden += self.learning_rate * np.dot((hidden_errors * self.sigmoid_derivative(hidden_outputs)), inputs.T)
+            self.bias_hidden += self.learning_rate * (hidden_errors * self.sigmoid_derivative(hidden_outputs))
 
         # Вероятность
         output_chances = final_outputs.flatten()
@@ -58,24 +59,43 @@ learning_rate = 0.1
 mlp = MLP(input_nodes, hidden_nodes, output_nodes, learning_rate)
 
 
-def learnMLP(data, epochs):
+def learnMLP(data,test_data,epochs):
     error_epochs = []
     number = 0
     chance = float('-inf')
-
+    error_test_epochs = []
+    number_test = 0
+    chance_test = float('-inf')
     for e in range(epochs):
         sum_error = 0
+        sum_error_test = 0
         for record in data:
             inputs = (np.asarray(record[1:], dtype=float) / 255.0 * 0.99) + 0.01
             targets = np.zeros(output_nodes) + 0.01
             targets[int(numbers.index(int(record[0])))] = 0.99
-            errors,chances = mlp.train(inputs, targets)
+            errors, chances = mlp.train(inputs, targets)
+    
             sum_error += np.linalg.norm(errors)
 
             maxIndex = np.argmax(chances)  # Индекс максимальной вероятности
             number = numbers[maxIndex]
             chance = chances[maxIndex]
+        
+        for record in test_data:
+            inputs = (np.asarray(record[1:], dtype=float) / 255.0 * 0.99) + 0.01
+            targets = np.zeros(output_nodes) + 0.01
+            targets[int(numbers.index(int(record[0])))] = 0.99
+            error_test, chances = mlp.train(inputs, targets, True)
+    
+            sum_error_test += np.linalg.norm(error_test)
 
-        error_epochs.append(sum_error / len(data))  # Средняя ошибка на эпоху
+            maxIndex = np.argmax(chances)  # Индекс максимальной вероятности
+            number_test = numbers[maxIndex]
+            chance_test = chances[maxIndex]
+
+        if(len(data)):
+            error_epochs.append(sum_error / len(data))  # Средняя ошибка на эпоху
+        if(len(test_data)):
+            error_test_epochs.append(sum_error_test / len(test_data)) # Средняя ошибка на эпоху для тестового данного
         print("Epocha now: ",e, "Last is: ",epochs)
-    return [error_epochs, number, chance ]
+    return [error_epochs, number, chance,error_test_epochs, number_test, chance_test]

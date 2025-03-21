@@ -9,6 +9,7 @@ import random
 train_data, test_data = 0,0
 global_path = "./"
 error,numb,chance = [],0,0
+error_test,numb_test,chance_test = [],0,0
 
 
 type = -1
@@ -23,12 +24,12 @@ if type == 1:
     train_data = readData(global_path+"trainP.csv")
     test_data = readData(global_path+"testP.csv")
     print(len(train_data),len(test_data),"Traning Perceptorn")
-    error,numb,chance = learnP(train_data, len(train_data))
+    error,numb,chance,error_test,numb_test,chance_test = learnP(train_data, test_data, len(train_data))
 else:
     train_data = readData(global_path+"trainMLP.csv")
     test_data = readData(global_path+"testMLP.csv")
     print(len(train_data),len(test_data), "Traning MLP")
-    error,numb,chance = learnMLP(train_data, len(train_data))
+    error,numb,chance,error_test,numb_test,chance_test = learnMLP(train_data,test_data, len(train_data))
 
 
 
@@ -51,18 +52,14 @@ while (do!=0):
             showGraphAccess(error, 'График обучения многослойного персептрона')
     elif do == 5:
         if type == 1:
-            error,numb,chance = learnP(test_data,len(test_data))
-            showGraphError(error, 'График обучения персептрона')
+            showGraphError(error_test, 'График обучения персептрона')
         else:
-            error,numb,chance = learnMLP(test_data,len(test_data))
-            showGraphError(error, 'График обучения многослойного персептрона')
+            showGraphError(error_test, 'График обучения многослойного персептрона')
     elif do == 6:
         if type == 1:
-            error,numb,chance = learnP(test_data,len(test_data))
-            showGraphAccess(error, 'График обучения персептрона')
+            showGraphAccess(error_test, 'График обучения персептрона')
         else:
-            error,numb,chance = learnMLP(test_data,len(test_data))
-            showGraphAccess(error, 'График обучения многослойного персептрона')
+            showGraphAccess(error_test, 'График обучения многослойного персептрона')
     elif do == 7:
 
         numb = -1
@@ -74,34 +71,32 @@ while (do!=0):
         for test in test_data:
             if(int(test[0])==numb):
                 data.append(test)
-        data = [data[random.randint(0,len(data))]]
+        data = [data[random.randint(0,len(data)-1)]]
         
         if(len(data)):
             if type == 1:
-                error,numb,chance = learnP(data,1)
-                print("IS: ", numb, "; chance: ", chance)
+                e,n,c, et,nt,ct = learnP([],data,1)
+                print("IS: ", nt, "; chance: ", ct)
             else:
-                error,numb,chance = learnMLP(data,1)
-                print("IS: ", numb, "; chance: ", chance)
+                e,n,c, et,nt,ct = learnMLP([],data,1)
+                print("IS: ", nt, "; chance: ", ct)
             showData(data,1,1)
     elif do == 8:
         true = []
         predicat = []
         if type == 1:
             for test in test_data:
-                error,numb,chance = learnP([test],1)
+                e,n,c, et,nt,ct = learnP([],[test],1)
                 true.append(int(test[0]))
-                predicat.append(numb)
+                predicat.append(nt)
                 
         else:
             for test in test_data:
-                error,numb,chance = learnMLP([test],1)
+                e,n,c, et,nt,ct = learnMLP([],[test],1)
                 true.append(int(test[0]))
-                predicat.append(numb)
+                predicat.append(nt)
 
         showConfusionMatrix(true, predicat)
     elif do == 9:
-        if type == 1:
-            createData(global_path+'mnist_test.csv',global_path+'trainP.csv',global_path+'testP.csv',20,10)
-        else:
-            createData(global_path+'mnist_test.csv',global_path+'trainMLP.csv',global_path+'testMLP.csv',200,100)
+        createData(global_path+'mnist_test.csv',global_path+'trainP.csv',global_path+'testP.csv',20,10)
+        createData(global_path+'mnist_test.csv',global_path+'trainMLP.csv',global_path+'testMLP.csv',200,100)

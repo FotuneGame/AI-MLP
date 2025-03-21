@@ -11,7 +11,7 @@ class Perceptron:
         # Инициализация весов случайными значениями
         self.weights = np.random.rand(self.output_nodes, self.input_nodes) - 0.5
 
-    def train(self, inputs, targets):
+    def train(self, inputs, targets, isTest=False):
         inputs = np.array(inputs, ndmin=2).T
         targets = np.array(targets, ndmin=2).T
 
@@ -23,7 +23,8 @@ class Perceptron:
         output_errors = targets - outputs
 
         # Обновление весов
-        self.weights += self.learning_rate * np.dot((output_errors * outputs * (1 - outputs)), inputs.T)
+        if(not(isTest)):
+            self.weights += self.learning_rate * np.dot((output_errors * outputs * (1 - outputs)), inputs.T)
 
         # Вероятность
         output_chances = outputs.flatten()
@@ -37,23 +38,43 @@ n = Perceptron(input_nodes, output_nodes, learning_rate)
 
 
 
-def learnP(data,epochs):
+def learnP(data,test_data,epochs):
     error_epochs = []
     number = 0
     chance = float('-inf')
+    error_test_epochs = []
+    number_test = 0
+    chance_test = float('-inf')
     for e in range(epochs):
         sum_error = 0
+        sum_error_test = 0
         for record in data:
             inputs = (np.asarray(record[1:], dtype=float) / 255.0 * 0.99) + 0.01
             targets = np.zeros(output_nodes) + 0.01
             targets[int(numbers.index(int(record[0])))] = 0.99
             errors, chances = n.train(inputs, targets)
+    
             sum_error += np.linalg.norm(errors)
 
             maxIndex = np.argmax(chances)  # Индекс максимальной вероятности
             number = numbers[maxIndex]
             chance = chances[maxIndex]
+        
+        for record in test_data:
+            inputs = (np.asarray(record[1:], dtype=float) / 255.0 * 0.99) + 0.01
+            targets = np.zeros(output_nodes) + 0.01
+            targets[int(numbers.index(int(record[0])))] = 0.99
+            error_test, chances = n.train(inputs, targets, True)
+    
+            sum_error_test += np.linalg.norm(error_test)
 
-        error_epochs.append(sum_error / len(data))  # Средняя ошибка на эпоху
+            maxIndex = np.argmax(chances)  # Индекс максимальной вероятности
+            number_test = numbers[maxIndex]
+            chance_test = chances[maxIndex]
+
+        if(len(data)):
+            error_epochs.append(sum_error / len(data))  # Средняя ошибка на эпоху
+        if(len(test_data)):
+            error_test_epochs.append(sum_error_test / len(test_data)) # Средняя ошибка на эпоху для тестового данного
         print("Epocha now: ",e, "Last is: ",epochs)
-    return [error_epochs, number, chance]
+    return [error_epochs, number, chance,error_test_epochs, number_test, chance_test]
