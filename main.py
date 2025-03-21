@@ -6,10 +6,13 @@ from data import numbers
 import random
 
 
+
+
 train_data, test_data = 0,0
 global_path = "./"
 error,numb,chance = [],0,0
 error_test,numb_test,chance_test = [],0,0
+
 
 
 type = -1
@@ -99,4 +102,4 @@ while (do!=0):
         showConfusionMatrix(true, predicat)
     elif do == 9:
         createData(global_path+'mnist_test.csv',global_path+'trainP.csv',global_path+'testP.csv',20,10)
-        createData(global_path+'mnist_test.csv',global_path+'trainMLP.csv',global_path+'testMLP.csv',200,100)
+        createData(global_path+'mnist_test.csv',global_path+'trainMLP.csv',global_path+'testMLP.csv',20,10)
